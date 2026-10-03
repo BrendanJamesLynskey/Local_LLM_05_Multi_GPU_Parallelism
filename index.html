@@ -1066,7 +1066,8 @@
         <div class="code-header">vLLM with EP on 8 GPUs (Mixtral-8x7B)</div>
         <pre><code>vllm serve mistralai/Mixtral-8x7B-Instruct-v0.1 \
     --tensor-parallel-size 2 \
-    --expert-parallel-size 4 \
+    --data-parallel-size 4 \
+    --enable-expert-parallel \
     --dtype bfloat16 \
     --gpu-memory-utilization 0.92</code></pre>
     </div>
@@ -1087,7 +1088,7 @@
                 <tr><td>NVLink 3 (A100)</td><td>600 GB/s</td><td>point-to-point mesh</td><td>TP up to 8</td></tr>
                 <tr><td>NVLink 4 (H100)</td><td>900 GB/s</td><td>through NVSwitch</td><td>TP up to 8 / node</td></tr>
                 <tr><td>NVLink C2C (Grace-Blackwell)</td><td>900 GB/s CPU&harr;GPU</td><td>integrated</td><td>unified-memory loading &amp; Spark clusters</td></tr>
-                <tr><td>NVSwitch / NVL72</td><td>1.8 TB/s aggregate</td><td>all-to-all switch</td><td>72-GPU single domain (GB200 NVL72)</td></tr>
+                <tr><td>NVSwitch / NVL72</td><td>1.8 TB/s per GPU</td><td>all-to-all switch</td><td>72-GPU single domain (GB200 NVL72)</td></tr>
                 <tr><td>InfiniBand NDR 400</td><td>50 GB/s</td><td>Clos fabric</td><td>cross-node TP/PP/EP</td></tr>
                 <tr><td>Ethernet RoCE 200G</td><td>25 GB/s</td><td>switched</td><td>DGX Spark pair / commodity</td></tr>
                 <tr><td>Ethernet 10G</td><td>1.25 GB/s</td><td>switched</td><td>DP-only across nodes</td></tr>
@@ -1166,9 +1167,9 @@ nvidia-smi -q -d TOPOLOGY | head -50</code></pre>
                 <option value="24|fp16|48|no">Mistral-Small-24B FP16</option>
                 <option value="70|fp16|140|no">Llama-3.3-70B FP16</option>
                 <option value="70|int4|40|no">Llama-3.3-70B AWQ-INT4</option>
-                <option value="141|fp8|141|no">Llama-3 405B FP8</option>
-                <option value="236|fp16|470|yes">DeepSeek-V3 MoE FP16</option>
-                <option value="236|fp8|236|yes">DeepSeek-V3 MoE FP8</option>
+                <option value="405|fp8|405|no">Llama-3 405B FP8</option>
+                <option value="671|fp16|1342|yes">DeepSeek-V3 MoE FP16</option>
+                <option value="671|fp8|671|yes">DeepSeek-V3 MoE FP8</option>
             </select>
         </div>
         <div class="control-row">
@@ -1176,12 +1177,12 @@ nvidia-smi -q -d TOPOLOGY | head -50</code></pre>
             <select id="pp-gpus">
                 <option value="1|24|nvlink">1 × RTX 4090 (24 GB)</option>
                 <option value="2|24|pcie">2 × RTX 4090 PCIe</option>
-                <option value="2|24|nvlink">2 × RTX 4090 + NVLink bridge</option>
+                <option value="2|24|nvlink">2 × RTX 3090 + NVLink bridge</option>
                 <option value="1|128|c2c">1 × DGX Spark (128 GB unified)</option>
                 <option value="2|128|roce">2 × DGX Spark, 200 GbE</option>
                 <option value="8|80|nvswitch">8 × H100 80 GB (NVSwitch)</option>
                 <option value="16|80|ib">2 nodes × 8 × H100 + IB</option>
-                <option value="64|96|nvl72">64 × B200 (NVL72 switch)</option>
+                <option value="64|192|nvl72">64 × B200 (NVL72 switch)</option>
             </select>
         </div>
         <div class="control-row">
@@ -1252,7 +1253,7 @@ nvidia-smi -q -d TOPOLOGY | head -50</code></pre>
                 'vllm serve <model> \\\n' +
                 '    --tensor-parallel-size '   + tp + ' \\\n' +
                 (pp > 1 ? '    --pipeline-parallel-size ' + pp + ' \\\n' : '') +
-                (ep > 1 ? '    --expert-parallel-size '   + ep + ' \\\n' : '') +
+                (ep > 1 ? '    --enable-expert-parallel \\\n' : '') +
                 (dp > 1 ? '    --data-parallel-size '     + dp + ' \\\n' : '') +
                 '    --gpu-memory-utilization 0.92';
 
